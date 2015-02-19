@@ -1,6 +1,5 @@
 obj-m += mod1.o
 obj-m += mod_NL.o
-obj-m += mod_PAGE_SIZE.o
 obj-m += mod_lin_addr.o
 obj-m += mod_PAGE_WALK.o
 obj-m += mod_PAGE_WALK2.o
