@@ -54,7 +54,7 @@ static void hello_nl_recv_msg(struct sk_buff *skb)
     struct mm_struct *mms;
     unsigned long int lin, pgd_index, pmd_index, pud_index, pte_index, offset, cr3, word_addr;
     unsigned long int *pgd, *pud_phys, *pmd_phys, *pte_phys, *page_phys, *pmd, *pte, *pud, *page, *lin_cast; 
-    int word;
+    char *word;
 
 
 
@@ -127,11 +127,10 @@ static void hello_nl_recv_msg(struct sk_buff *skb)
     printk(KERN_INFO "pte[index] =   %lu\n", page_phys);
     printk(KERN_INFO "offset = 0x%16.16lx\n", offset);
     word_addr = (unsigned long int)page + offset;
-    word = *((int *)word_addr);
     printk(KERN_INFO "word address = 0x%16.16lx\n", word_addr);
-    printk(KERN_INFO "word = %d\n", word);
-    lin_cast = (int *)lin;
-    printk(KERN_INFO "word = %d\n", *lin_cast);
+    printk(KERN_INFO "word = %s\n", (char *)word_addr);
+    lin_cast = (char *)lin;
+    printk(KERN_INFO "word = %s\n", lin_cast);
 
 
 
