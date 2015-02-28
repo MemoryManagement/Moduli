@@ -118,8 +118,8 @@ static void hello_nl_recv_msg(struct sk_buff *skb)
     page_phys = pte[pte_index];
     page_phys = (unsigned long int)page_phys>>12;
     page_phys = (unsigned long int)page_phys<<12;
-    page_phys = (unsigned long int)page_phys<<28; /*????????????????*/
-    page_phys = (unsigned long int)page_phys>>28; /*????????????????*/
+    page_phys = (unsigned long int)page_phys<<16;
+    page_phys = (unsigned long int)page_phys>>16;
     page = page_phys + PAGE_OFFSET/8;
     offset = lin<<52;
     offset = offset>>52;
