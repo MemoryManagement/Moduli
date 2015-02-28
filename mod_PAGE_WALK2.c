@@ -61,16 +61,13 @@ static void hello_nl_recv_msg(struct sk_buff *skb)
     printk(KERN_INFO "Entering: %s\n", __FUNCTION__);
     
     msg_rec = receive_string(skb, &nlh);
-    printk(KERN_INFO "%s\n", msg_rec);
 	//sprintf(msg, "%d", PAGE_SIZE);
 	ts = get_current();
 	printk(KERN_INFO "%s\n", ts->comm);
 	mms = ts->mm;
     pgd = mms->pgd;
-	printk(KERN_INFO "lin addr pgd = 0x%16.16lx\n", pgd);
-    printk(KERN_INFO "lin addr pgd = %lu\n", pgd);
-    printk(KERN_INFO "phys addr pgd = %lu\n", pgd-PAGE_OFFSET/8);
-    printk(KERN_INFO "phys addr pgd = 0x%16.16lx\n", pgd-PAGE_OFFSET/8);
+	printk(KERN_INFO "Indirizzo virtuale PGD da task_struct = 0x%16.16lx\n", pgd);
+    printk(KERN_INFO "Indirizzo fisico PGD da \ntask_struct-PAGE_OFFSET = 0x%16.16lx\n", pgd-PAGE_OFFSET/8);
     __asm__ __volatile__ (
         "mov %%cr3, %%rax\n"
         "mov %%rax, %0\n"
@@ -78,13 +75,11 @@ static void hello_nl_recv_msg(struct sk_buff *skb)
     :
     :  "%rax"
     );
-    printk(KERN_INFO "cr3 = 0x%16.16lx\n", cr3);
+    printk(KERN_INFO "Indirizzo fisico PGD da registro CR3 = 0x%16.16lx\n", cr3);
     sscanf(msg_rec, "%lu", &lin);
-    printk(KERN_INFO "lin addr sent = 0x%16.16lx\n", lin);
-    printk(KERN_INFO "PAGE_OFFSET = %lu\n", PAGE_OFFSET);
+    printk(KERN_INFO "Indirizzo virtuale spedito = 0x%16.16lx\n", lin);
     pgd_index = lin<<16;
     pgd_index = pgd_index>>55;
-    printk(KERN_INFO "pgd index = 0x%16.16lx\n", pgd_index);
     printk(KERN_INFO "pgd index = %lu\n", pgd_index);
     pud_phys = pgd[pgd_index];
     pud_phys = (unsigned long int)pud_phys>>12;
@@ -92,29 +87,27 @@ static void hello_nl_recv_msg(struct sk_buff *skb)
     pud = pud_phys + PAGE_OFFSET/8;
     pud_index = lin<<25;
     pud_index = pud_index>>55;
-    printk(KERN_INFO "                    %lu\n", pgd);
-
-    printk(KERN_INFO "pgd[index] = 0x%16.16lx\n", pud_phys);
-    printk(KERN_INFO "pgd[index] =   %lu\n", pud_phys);
-    printk(KERN_INFO "pud index = 0x%16.16lx\n", pud_index);
+    printk(KERN_INFO "pud = pgd[%lu] = 0x%16.16lx\n", pgd_index, pud_phys);
+    printk(KERN_INFO "Aggiungo PAGE_OFFSET per ottenere l'indirizzo virtuale, \nnella parte di identity mapping nello spazio del kernel\n");
+    printk(KERN_INFO "pud index = %lu\n", pud_index);
     pmd_phys = pud[pud_index];
     pmd_phys = (unsigned long int)pmd_phys>>12;
     pmd_phys = (unsigned long int)pmd_phys<<12;
     pmd = pmd_phys + PAGE_OFFSET/8;
     pmd_index = lin<<34;
     pmd_index = pmd_index>>55;
-    printk(KERN_INFO "pud[index] = 0x%16.16lx\n", pmd_phys);
-    printk(KERN_INFO "pud[index] =   %lu\n", pmd_phys);
-    printk(KERN_INFO "pmd index = 0x%16.16lx\n", pmd_index);
+    printk(KERN_INFO "pmd = pud[%lu] = 0x%16.16lx\n", pud_index, pmd_phys);
+    printk(KERN_INFO "Aggiungo PAGE_OFFSET per ottenere l'indirizzo virtuale, \nnella parte di identity mapping nello spazio del kernel\n");
+    printk(KERN_INFO "pmd index = %lu\n", pmd_index);
     pte_phys = pmd[pmd_index];
     pte_phys = (unsigned long int)pte_phys>>12;
     pte_phys = (unsigned long int)pte_phys<<12;
     pte = pte_phys + PAGE_OFFSET/8;
     pte_index = lin<<43;
     pte_index = pte_index>>55;
-    printk(KERN_INFO "pmd[index] = 0x%16.16lx\n", pte_phys);
-    printk(KERN_INFO "pmd[index] =   %lu\n", pte_phys);
-    printk(KERN_INFO "pte index = 0x%16.16lx\n", pte_index);
+    printk(KERN_INFO "pte = pmd[%lu] = 0x%16.16lx\n", pmd_index, pte_phys);
+    printk(KERN_INFO "Aggiungo PAGE_OFFSET per ottenere l'indirizzo virtuale, \nnella parte di identity mapping nello spazio del kernel\n");
+    printk(KERN_INFO "pte index = %lu\n", pte_index);
     page_phys = pte[pte_index];
     page_phys = (unsigned long int)page_phys>>12;
     page_phys = (unsigned long int)page_phys<<12;
@@ -123,14 +116,15 @@ static void hello_nl_recv_msg(struct sk_buff *skb)
     page = page_phys + PAGE_OFFSET/8;
     offset = lin<<52;
     offset = offset>>52;
-    printk(KERN_INFO "pte[index] = 0x%16.16lx\n", page_phys);
-    printk(KERN_INFO "pte[index] =   %lu\n", page_phys);
-    printk(KERN_INFO "offset = 0x%16.16lx\n", offset);
+    printk(KERN_INFO "page = pte[%lu] = 0x%16.16lx\n", pte_index, page_phys);
+    printk(KERN_INFO "Aggiungo PAGE_OFFSET per ottenere l'indirizzo virtuale, \nnella parte di identity mapping nello spazio del kernel\n");
+    printk(KERN_INFO "offset = 0x%lx\n", offset);
     word_addr = (unsigned long int)page + offset;
-    printk(KERN_INFO "word address = 0x%16.16lx\n", word_addr);
-    printk(KERN_INFO "word = %s\n", (char *)word_addr);
+    printk(KERN_INFO "1. Indirizzo della parola nella parte kernel di direct mapping \n(NPV|offset) = 0x%16.16lx\n", word_addr);
+    printk(KERN_INFO "2. Indirizzo virtuale spedito = 0x%16.16lx\n", lin);
+    printk(KERN_INFO "Stringa da 1 = %s\n", (char *)word_addr);
     lin_cast = (char *)lin;
-    printk(KERN_INFO "word = %s\n", lin_cast);
+    printk(KERN_INFO "Stringa da 2 = %s\n", lin_cast);
 
 
 
